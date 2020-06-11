@@ -1,0 +1,49 @@
+---
+title: "nyctech_dataviz"
+author: "Jenn Schilling"
+date: "6/10/2020"
+output: html_document
+---
+
+**Things to visualize:**  
+* Overall average for every category  
+* Average size of female fouded companies in the set  	
+* Average #s across all depts for all female founded cos  
+* Average size of male founded companies in the set  
+* Average #s acorss all depts for all male founed cos  
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(readxl)
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+
+data <- read_xlsx("Gender Diversity in NY Numbers.xlsx", sheet = "Sheet1")
+
+```
+
+```{r data processing}
+
+data.long <- data %>%
+  pivot_longer(Headcount_Total:Other_F, names_to = "colnames") %>%
+  separate(colnames, into = c("Department", "Label"), sep = "_") %>%
+  pivot_wider(names_from = Label, values_from = value) %>%
+  mutate(Department = ifelse(Department == "Headcount", "Company", 
+                             ifelse(Department == "Eng", "Engineering",
+                                    ifelse(Department == "Mkt", "Marketing", Department)))) %>%
+  mutate(headcount_check = (M + F) == Total,
+         M_Percent = M / Total,
+         F_Percent = F / Total)
+
+nonmatch <- data.long %>% filter(headcount_check == FALSE)
+
+write.csv(nonmatch, "headcountsum_nonmatch.csv", row.names = FALSE)
+
+```
+
+```{r visualization}
+
+```
+
