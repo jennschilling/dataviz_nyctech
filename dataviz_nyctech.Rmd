@@ -19,6 +19,7 @@ library(readxl)
 library(tidyr)
 library(dplyr)
 library(ggplot2)
+library(ggtext)
 
 data <- read_xlsx("Gender Diversity in NY Numbers.xlsx", sheet = "Sheet1")
 
@@ -59,24 +60,29 @@ data.avg <- data.long %>%
 
 ggplot(data = data.avg %>% filter(Department == "Company")) +
   geom_bar(mapping = aes(x = Founded, y = avg.size, fill = Founded), stat = "Identity") +
+  geom_text(aes(x = Founded, y = avg.size, label = paste0(scales::percent(avg.percent.F, accuracy = 1), " Female Employees")), 
+            position = position_dodge(width = .9),    # move to center of bars
+            vjust = -0.5) +    # nudge above top of bar  
   scale_fill_brewer(palette = "Set2") +
   xlab("Gender of Founder") +
-  ylab("Average Total Number of Employees") +
-  labs(title = "Companies with <b style='color:#66c2a5'>female</b> founders have on average <b>fewer total employees</b> <br> than companies with <b style='color:#fc8d62'>male</b> founders.") +
+  ylab("Average Total Number of \n New York Based Employees") +
+  labs(title = "New York Based Tech Companies with <b style='color:#66c2a5'>female</b> founders on average have <b>fewer total employees</b> <br> than those with <b style='color:#fc8d62'>male</b> founders, but <b style='color:#66c2a5'>female</b> founded companies on average have a <b>greater<br> proportion of female employees</b>.") +
   theme_classic(base_size = 14) +
   theme(legend.position = "none",
         plot.title = element_markdown(lineheight = 1.1)) 
 
 
-ggplot(data = data.avg %>% filter(Department != "Company")) +
-  geom_bar(mapping = aes(x = Founded, y = avg.percent.F, fill = Founded), stat = "Identity") +
+ggplot(data = data.avg %>% filter(Department != "Company"),
+       aes(x = Founded, y = avg.percent.F, fill = Founded, label = scales::percent(avg.percent.F, accuracy = 1))) +
+  geom_col(position = 'dodge') + 
+ # geom_text(position = position_dodge(width = .9),    # move to center of bars
+ #            vjust = -0.5) +    # nudge above top of bar  
   facet_wrap(~ Department) +
   scale_fill_brewer(palette = "Set2") +
   xlab("Gender of Founder") +
-  ylab("Average Percent of Employees \nIdentifying as Female") +
+  ylab("Average Percent of New York Based \nEmployees Identifying as Female") +
   scale_y_continuous(labels = scales::percent_format(accuracy = 1), limits = c(0, 1)) +
-  labs(title = "Companies with <b style='color:#66c2a5'>female</b> founders have on average a <b>higher proportion of female</b><br> 
-       employees in each department than companies with <b style='color:#fc8d62'>male</b> founders.") +
+  labs(title = "New York Based Tech Companies with <b style='color:#66c2a5'>female</b> founders on average have a <b>higher proportion of female</b><br> employees in each department than those with <b style='color:#fc8d62'>male</b> founders.") +
   theme_classic(base_size = 14) +
   theme(legend.position = "none",
         plot.title = element_markdown(lineheight = 1.1)) 
